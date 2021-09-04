@@ -1,2 +1,2 @@
 # Django-eMall
-E-Commerce Mall has three different stores: clothes, electronics, and grocery.
+E-Commerce Mall built using django framework 
