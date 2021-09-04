@@ -1,0 +1,260 @@
+{% extends "base/main/layout/layout.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block site_title %}
+{{ product.name|title }}
+{% endblock %}
+
+{% block content %}
+{% include "components/breadcrumb.html" %}
+{% include "components/quick-view.html" %}
+
+<!-- Page Content-->
+<div class="container">
+    <div class="bg-light box-shadow-lg rounded-lg">
+        <!-- Tabs-->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link p-4 active" href="#general" data-toggle="tab" role="tab">General
+                    Info</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link p-4" href="#reviews" data-toggle="tab" role="tab">Reviews
+                    <span class="font-size-sm opacity-60">({{ product_comments_count }})</span></a>
+            </li>
+        </ul>
+        <div class="px-4 pt-lg-3 pb-3 mb-5">
+            <div class="tab-content px-lg-3">
+                <!-- General info tab-->
+                <div class="tab-pane fade show active" id="general" role="tabpanel">
+                    <div class="row">
+                        <!-- Product gallery-->
+                        <div class="col-lg-7 pr-lg-0">
+                            <div class="cz-product-gallery">
+                                <div class="cz-preview order-sm-2">
+                                    <div class="cz-preview-item active" id="first">
+                                        <img class="cz-image-zoom" src="/media/{{ product.image }}"
+                                            data-zoom="/media/{{ product.image }}" alt="Product image">
+                                        <div class="cz-image-zoom-pane"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Product details-->
+                        <div class="col-lg-5 pt-4 pt-lg-0">
+                            <div class="product-details ml-auto pb-3">
+                                {% if product.discount_price %}
+                                <div class="h3 font-weight-normal text-accent mb-3 mr-1">
+                                    <small>JOD</small> {{ product.discount_price }}
+                                    <del class="font-size-lg text-muted"><small>JOD</small> {{ product.price }}</del>
+                                    <span class="badge badge-primary badge-shadow font-size-lg">
+                                        SAVE {{ product.discount_percentage }}%
+                                    </span>
+                                </div>
+                                {% else %}
+                                <div class="h3 font-weight-normal text-accent mb-3 mr-1">
+                                    <small>JOD</small> {{ product.price }}
+                                </div>
+                                {% endif %}
+                                <form method="POST" action="{% url 'order:addtoshpcart' product.id %}" >
+                                  {%csrf_token%}
+                                 
+                                      <div class="position-relative mr-n4 mb-3">
+  
+                                          {% if product.color %}
+                                          {% for color in product.color %}
+                                          <div class="custom-control custom-option custom-control-inline mb-2">
+                                              <input class="custom-control-input" type="radio" name="color_Choiced"
+                                                  id="color{{ color }}" data-label="colorOption" value="{{ color }}"
+                                                  checked>
+                                              <label class="custom-option-label rounded-circle" for="color{{ color }}">
+                                                  <span class="custom-option-color rounded-circle"
+                                                      style="background-color: {{ color }};"></span>
+                                              </label>
+                                          </div>
+                                          {% endfor %}
+                                          {% else %}
+                                          <div class="custom-control custom-option custom-control-inline mb-2"></div>
+                                          {% endif %}
+  
+                                          {% if product.active %}
+                                          <div class="product-badge product-available mt-n1">
+                                              <i class="czi-security-check"></i>Product available
+                                          </div>
+                                          {% else %}
+                                          <div class="product-badge product-not-available mt-n1">
+                                              <i class="czi-security-check"></i>Out of Stock
+                                          </div>
+                                          {% endif %}
+  
+  
+                                      </div>
+                                      {% if product.size %}
+                                      <div class="form-group">
+                                          <div class="d-flex justify-content-between align-items-center pb-1">
+                                              <label class="font-weight-medium" for="product-size">Size:</label>
+                                          </div>
+                                          <select class="custom-select" required id="product-size" name = "size_Choiced">
+                                              <option value="">Select size</option>
+                                              {% for size in product.size %}
+                                              <option value="{{ size }}">{{ size }}</option>
+                                              {% endfor %}
+                                          </select>
+                                      </div>
+                                      {% endif %}
+  
+                                      <div class="form-group d-flex align-items-center">
+                                          <select class="custom-select mr-3" name = "quantity" style="width: 5rem;">
+                                              <option value="1">1</option>
+                                              <option value="2">2</option>
+                                              <option value="3">3</option>
+                                              <option value="4">4</option>
+                                              <option value="5">5</option>
+                                          </select>
+                                          <button class="btn btn-primary btn-shadow btn-block" type="submit"><i
+                                                  class="czi-cart font-size-lg mr-2"></i>Add to Cart</button>
+                                      </div>
+                                  </form>
+                                <div class="d-flex mb-4">
+                                    {% if user in product.favourite.all %}
+                                    <div class="w-100 mr-3">
+                                        <a class="btn btn-outline-secondary btn-block"
+                                            href="{% url 'core:favourite_product' product.slug %}"
+                                            title="Remove from wishlist">
+                                            <i class="fa fa-heart font-size-lg mr-2"></i>
+                                            <span class='d-none d-sm-inline'>Remove from </span>Wishlist
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <div class="w-100 mr-3">
+                                        <a class="btn btn-outline-primary btn-block"
+                                            href="{% url 'core:favourite_product' product.slug %}"
+                                            title="Add to wishlist">
+                                            <i class="czi-heart font-size-lg mr-2"></i>
+                                            <span class='d-none d-sm-inline'>Add to </span>Wishlist
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Product panels-->
+                                <div class="accordion mb-4" id="productPanels">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="accordion-heading">
+                                                <a href="#productdescription" role="button" data-toggle="collapse"
+                                                    aria-expanded="true" aria-controls="productdescription">
+                                                    <i
+                                                        class="czi-announcement text-muted lead align-middle mt-n1 mr-2"></i>
+                                                    Product Info
+                                                    <span class="accordion-indicator"></span>
+                                                </a>
+                                            </h3>
+                                        </div>
+                                        <div class="collapse show" id="productdescription"
+                                            data-parent="#productdescription">
+                                            <div class="card-body font-size-sm">
+                                                <div class="d-flex justify-content-between border-bottom pb-2">
+                                                    {{ product.description }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reviews tab-->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    {% include "components/review.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="pb-5">
+
+<!-- Product carousel (You may also like)-->
+<div class="container pt-lg-2 pb-5 mb-md-3">
+    <h2 class="h3 text-center pb-4">You may also like</h2>
+    <div class="cz-carousel cz-controls-static cz-controls-outside">
+        <div class="cz-carousel-inner"
+            data-carousel-options="{&quot;items&quot;: 2, &quot;controls&quot;: true, &quot;nav&quot;: false, &quot;autoHeight&quot;: true, &quot;responsive&quot;: {&quot;0&quot;:{&quot;items&quot;:1},&quot;500&quot;:{&quot;items&quot;:2, &quot;gutter&quot;: 18},&quot;768&quot;:{&quot;items&quot;:3, &quot;gutter&quot;: 20}, &quot;1100&quot;:{&quot;items&quot;:4, &quot;gutter&quot;: 30}}}">
+            {% for product in similar_products %}
+            <div class="card product-card-alt">
+                {% if product.discount_price %}
+                <span class="badge badge-danger badge-shadow">Sale</span>
+                {% endif %}
+                <div class="product-thumb">
+                    {% if user in product.favourite.all %}
+                    <a class="btn-wishlist btn-sm" href="{% url 'core:favourite_product' product.slug %}"
+                        data-toggle="tooltip" data-placement="left" data-original-title="Remove from wishlist">
+                        <i class="fa fa-heart"></i></a>
+                    {% else %}
+                    <a class="btn-wishlist btn-sm" href="{% url 'core:favourite_product' product.slug %}"
+                        data-toggle="tooltip" data-placement="left" data-original-title="Add to wishlist">
+                        <i class="czi-heart"></i></a>
+                    {% endif %}
+                    <div class="product-card-actions">
+                        <a class="btn btn-light btn-icon btn-shadow font-size-base show_product"
+                        href="" id="{{product.name}}" data-id="{{product.name}}" class="artist-title " 
+                        data-toggle="modal" title="Quick View"><i
+                                class="czi-eye"></i></a>
+                                
+                             <a class="btn btn-light btn-icon btn-shadow font-size-base mx-2"
+                                            href="{% url 'order:addtoshpcart' product.id %}" 
+                                                 data-toggle="toast" data-target="#cart-toast"><i
+                                                    class="czi-cart"></i></a>
+                            
+                    </div><a class="product-thumb-overlay"
+                        href="{% url 'core:product_detail' p_store_type=product.category.store.storetype.slug store_slug=product.category.store.slug category_slug=product.category.slug slug=product.slug %}"></a>
+                    <img src="/media/{{ product.image }}" style="height: 224.33px;" alt="Product">
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start pb-2">
+                        <div class="text-muted font-size-xs mr-1">
+                            <a class="product-meta font-weight-medium"
+                                href="{% url 'core:category_products_list' c_store_type=product.category.store.storetype.slug store_slug=product.category.store.slug slug=product.category.slug %}">
+                                {{product.category.name|title }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <h3 class="product-title font-size-sm mb-2"><a
+                            href="{% url 'core:product_detail' p_store_type=product.category.store.storetype.slug store_slug=product.category.store.slug category_slug=product.category.slug slug=product.slug %}">
+                            {{product.name|title}}
+                        </a>
+                    </h3>
+                    {% if product.discount_price %}
+                    <span class="text-accent"><small>JOD</small> {{ product.discount_price }}</span>
+                    <del class="font-size-sm text-muted">{{ product.price }}</del>
+                    {% else %}
+                    <span class="text-accent"><small>JOD</small> {{ product.price }}</span>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Toast: Added to Cart-->
+<div class="toast-container toast-bottom-center">
+    <div class="toast mb-3" id="cart-toast" data-delay="5000" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white"><i class="czi-check-circle mr-2"></i>
+            <h6 class="font-size-sm text-white mb-0 mr-auto">Added to cart!</h6>
+            <button class="close text-white ml-2 mb-1" type="button" data-dismiss="toast" aria-label="Close"><span
+                    aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="toast-body">This item has been added to your cart.</div>
+    </div>
+</div>
+
+
+{% endblock %}
